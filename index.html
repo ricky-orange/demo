@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M CLub | 高端會員制男模會館</title>
+    
+    <!-- CDNs -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Custom Properties & Tailwind Config */
+        :root {
+            --bg-color: #0D0D12;
+            --gold-light: #F3E5AB;
+            --gold-main: #D4AF37;
+            --gold-dark: #AA771C;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #ffffff;
+            font-family: 'Noto Sans TC', sans-serif;
+            overflow-x: hidden;
+            cursor: none; /* Hide default cursor for custom cursor */
+        }
+
+        h1, h2, h3, .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        /* Luxury Gold Gradient Text */
+        .text-gradient-gold {
+            background: linear-gradient(to right, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+
+        /* Glassmorphism Components */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            transition: all 0.4s ease;
+        }
+        
+        .glass-card:hover {
+            border-color: rgba(212, 175, 55, 0.5);
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -10px rgba(212, 175, 55, 0.1);
+        }
+
+        /* Noise Texture Overlay */
+        .noise-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Custom Cursor */
+        .cursor-dot {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 6px;
+            background-color: var(--gold-main);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            mix-blend-mode: difference;
+            transform: translate(-50%, -50%);
+        }
+
+        .cursor-outline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+
+        /* Image Hover Effects for Models */
+        .model-img {
+            filter: grayscale(100%) brightness(0.8);
+            transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .group:hover .model-img {
+            filter: grayscale(0%) brightness(1.1);
+            transform: scale(1.05);
+        }
+
+        /* Hide Scrollbar but keep functionality */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0D0D12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gold-dark);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Noise Texture & Custom Cursor -->
+    <div class="noise-bg"></div>
+    <div class="cursor-dot hidden md:block"></div>
+    <div class="cursor-outline hidden md:block"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 top-0 transition-all duration-500" id="navbar">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+            <a href="#" class="text-2xl font-serif text-white tracking-[0.2em] uppercase">
+                <span class="text-gradient-gold">M</span> Club
+            </a>
+            <div class="hidden md:flex space-x-10 text-xs tracking-[0.15em] text-gray-400">
+                <a href="#philosophy" class="hover:text-[#D4AF37] transition-colors hover-target">會館理念</a>
+                <a href="#lineup" class="hover:text-[#D4AF37] transition-colors hover-target">男仕陣容</a>
+                <a href="#vip" class="hover:text-[#D4AF37] transition-colors hover-target">私密包廂</a>
+            </div>
+            <a href="#book" class="border border-[#D4AF37]/50 text-[#D4AF37] px-6 py-2 text-xs tracking-widest hover:bg-[#D4AF37] hover:text-black transition-all duration-300 hover-target">
+                立即預訂
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative h-screen flex items-center justify-center overflow-hidden">
+        <!-- Background Image with Overlay -->
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2070&auto=format&fit=crop" 
+                 class="w-full h-full object-cover opacity-40 scale-105" id="hero-bg" alt="Luxury Lounge Background">
+            <div class="absolute inset-0 bg-gradient-to-b from-[#0D0D12]/60 via-[#0D0D12]/40 to-[#0D0D12]"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.05)_0%,transparent_60%)]"></div>
+        </div>
+
+        <div class="relative z-10 text-center px-4 max-w-5xl mx-auto flex flex-col items-center">
+            <p class="text-[#D4AF37] tracking-[0.4em] text-xs md:text-sm mb-6 font-light uppercase opacity-0 reveal-text">Premium Membership Lounge</p>
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-8 leading-[1.1] tracking-wide opacity-0 reveal-title">
+                夜色中的<br><span class="text-gradient-gold italic pr-4">極致私享</span>
+            </h1>
+            <p class="text-gray-400 max-w-xl mx-auto text-sm md:text-base tracking-widest leading-loose mb-12 opacity-0 reveal-text font-light">
+                專為品味超凡的您打造，隱秘於繁華都市的最高殿堂。
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-6 justify-center w-full max-w-md mx-auto opacity-0 reveal-buttons">
+                <a href="#book" class="flex-1 bg-gradient-to-r from-[#BF953F] to-[#AA771C] text-black px-8 py-4 text-sm tracking-widest hover:brightness-110 transition-all duration-300 text-center font-medium hover-target">
+                    立即預訂
+                </a>
+                <a href="#lineup" class="flex-1 glass-card text-white px-8 py-4 text-sm tracking-widest hover:text-[#D4AF37] transition-all duration-300 text-center hover-target">
+                    瀏覽男仕陣容
+                </a>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center opacity-50">
+            <span class="text-xs text-[#D4AF37] tracking-widest mb-2 font-serif italic">Scroll</span>
+            <div class="w-[1px] h-12 bg-gray-700 relative overflow-hidden">
+                <div class="w-full h-1/2 bg-[#D4AF37] absolute top-0 animate-[scrolldown_2s_ease-in-out_infinite]"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Value Proposition Section -->
+    <section id="philosophy" class="py-32 relative z-10 bg-[#0D0D12]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20 section-header">
+                <h2 class="text-3xl md:text-4xl font-serif text-white mb-4 tracking-widest">會館理念</h2>
+                <div class="w-12 h-[1px] bg-[#D4AF37] mx-auto"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Value 1 -->
+                <div class="glass-card p-12 text-center group value-card opacity-0 translate-y-10">
+                    <div class="w-16 h-16 mx-auto mb-6 rounded-full border border-[#D4AF37]/30 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors duration-500">
+                        <iconify-icon icon="ph:crown-thin" class="text-3xl text-[#D4AF37]"></iconify-icon>
+                    </div>
+                    <h3 class="text-xl font-serif text-white mb-4 tracking-widest">尊榮至上</h3>
+                    <p class="text-gray-400 text-sm leading-loose tracking-wider font-light">
+                        嚴格的會員審核機制，確保為每一位貴賓提供最高規格的客製化專屬服務。
+                    </p>
+                </div>
+
+                <!-- Value 2 -->
+                <div class="glass-card p-12 text-center group value-card opacity-0 translate-y-10" style="transition-delay: 100ms;">
+                    <div class="w-16 h-16 mx-auto mb-6 rounded-full border border-[#D4AF37]/30 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors duration-500">
+                        <iconify-icon icon="ph:diamond-thin" class="text-3xl text-[#D4AF37]"></iconify-icon>
+                    </div>
+                    <h3 class="text-xl font-serif text-white mb-4 tracking-widest">極致品味</h3>
+                    <p class="text-gray-400 text-sm leading-loose tracking-wider font-light">
+                        從空間設計到特調美酒，每一個細節都經過精心雕琢，滿足您對美學的苛求。
+                    </p>
+                </div>
+
+                <!-- Value 3 -->
+                <div class="glass-card p-12 text-center group value-card opacity-0 translate-y-10" style="transition-delay: 200ms;">
+                    <div class="w-16 h-16 mx-auto mb-6 rounded-full border border-[#D4AF37]/30 flex items-center justify-center group-hover:bg-[#D4AF37]/10 transition-colors duration-500">
+                        <iconify-icon icon="ph:key-thin" class="text-3xl text-[#D4AF37]"></iconify-icon>
+                    </div>
+                    <h3 class="text-xl font-serif text-white mb-4 tracking-widest">絕對私密</h3>
+                    <p class="text-gray-400 text-sm leading-loose tracking-wider font-light">
+                        獨立隱蔽的專屬通道與隔音包廂，讓您在此盡情釋放，無須擔憂外界打擾。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lineup Section (Using Uploaded Images) -->
+    <section id="lineup" class="py-32 relative z-10">
+        <!-- Background decorative elements -->
+        <div class="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37]/10 to-transparent"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 relative">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-16 section-header">
+                <div>
+                    <h2 class="text-3xl md:text-5xl font-serif text-white mb-4 tracking-widest">男仕陣容</h2>
+                    <p class="text-[#D4AF37] tracking-[0.2em] text-sm uppercase font-light">Exclusive Gentlemen</p>
+                </div>
+                <a href="#rooms" class="text-gray-400 hover:text-[#D4AF37] tracking-widest text-sm transition-colors mt-6 md:mt-0 pb-1 border-b border-transparent hover:border-[#D4AF37] hover-target">
+                    查看完整陣容 →
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Model 1 -->
+                <div class="group relative overflow-hidden aspect-[3/4] glass-card p-2 cursor-pointer model-card hover-target">
+                    <div class="w-full h-full relative overflow-hidden">
+                        <img src="pic01.png" alt="Model Alexander" class="w-full h-full object-cover object-top model-img">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#0D0D12] via-transparent to-transparent opacity-80"></div>
+                        <div class="absolute bottom-0 left-0 p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                            <span class="text-[#D4AF37] text-xs tracking-widest uppercase mb-1 block opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">Top Tier</span>
+                            <h3 class="text-2xl font-serif text-white tracking-widest">Alexander</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model 2 -->
+                <div class="group relative overflow-hidden aspect-[3/4] glass-card p-2 cursor-pointer model-card hover-target mt-0 lg:mt-12">
+                    <div class="w-full h-full relative overflow-hidden">
+                        <img src="pic02.png" alt="Model Julian" class="w-full h-full object-cover object-top model-img">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#0D0D12] via-transparent to-transparent opacity-80"></div>
+                        <div class="absolute bottom-0 left-0 p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                            <span class="text-[#D4AF37] text-xs tracking-widest uppercase mb-1 block opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">Charismatic</span>
+                            <h3 class="text-2xl font-serif text-white tracking-widest">Julian</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model 3 -->
+                <div class="group relative overflow-hidden aspect-[3/4] glass-card p-2 cursor-pointer model-card hover-target">
+                    <div class="w-full h-full relative overflow-hidden">
+                        <img src="7.jpg" alt="Model Vincent" class="w-full h-full object-cover object-top model-img">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#0D0D12] via-transparent to-transparent opacity-80"></div>
+                        <div class="absolute bottom-0 left-0 p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                            <span class="text-[#D4AF37] text-xs tracking-widest uppercase mb-1 block opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">Gentle</span>
+                            <h3 class="text-2xl font-serif text-white tracking-widest">Vincent</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model 4 -->
+                <div class="group relative overflow-hidden aspect-[3/4] glass-card p-2 cursor-pointer model-card hover-target mt-0 lg:mt-12">
+                    <div class="w-full h-full relative overflow-hidden">
+                        <img src="DSC04755.jpg" alt="Model Lucas" class="w-full h-full object-cover object-top model-img">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#0D0D12] via-transparent to-transparent opacity-80"></div>
+                        <div class="absolute bottom-0 left-0 p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                            <span class="text-[#D4AF37] text-xs tracking-widest uppercase mb-1 block opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">Dynamic</span>
+                            <h3 class="text-2xl font-serif text-white tracking-widest">Lucas</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VIP Rooms Info Section -->
+    <section id="vip" class="py-32 relative z-10 bg-[#0D0D12]">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+                <div class="w-full lg:w-1/2 relative">
+                    <div class="absolute -inset-4 border border-[#D4AF37]/20 z-0 hidden lg:block translate-x-4 translate-y-4"></div>
+                    <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2070&auto=format&fit=crop" 
+                         alt="VIP Room" class="w-full aspect-[4/3] object-cover relative z-10 grayscale hover:grayscale-0 transition-all duration-700">
+                </div>
+                <div class="w-full lg:w-1/2 space-y-8 vip-text">
+                    <h2 class="text-3xl md:text-5xl font-serif text-white tracking-widest">隱秘殿堂</h2>
+                    <h3 class="text-[#D4AF37] tracking-[0.2em] text-sm uppercase font-light">Private Suites</h3>
+                    <p class="text-gray-400 text-sm md:text-base leading-loose tracking-wider font-light">
+                        M Club 設有多間風格各異的頂級私密包廂，從經典英倫雪茄吧到現代都會奢華，皆配備獨立音響、私酒櫃與專屬管家服務。
+                        在這裡，無需在意世俗眼光，只需沉浸於專屬於您的尊榮時刻。
+                    </p>
+                    <ul class="space-y-4 text-sm text-gray-300 font-light tracking-widest mt-8">
+                        <li class="flex items-center gap-3"><iconify-icon icon="ph:check" class="text-[#D4AF37]"></iconify-icon> 獨立隱蔽 VIP 專屬車道與通道</li>
+                        <li class="flex items-center gap-3"><iconify-icon icon="ph:check" class="text-[#D4AF37]"></iconify-icon> 頂級珍藏酒水與星級主廚私房料理</li>
+                        <li class="flex items-center gap-3"><iconify-icon icon="ph:check" class="text-[#D4AF37]"></iconify-icon> 最高層級安保與隱私保密協定</li>
+                    </ul>
+                    <div class="pt-6">
+                        <a href="#book" class="inline-flex items-center gap-3 text-[#D4AF37] border-b border-[#D4AF37] pb-1 hover:pr-4 transition-all duration-300 tracking-widest hover-target">
+                            查看包廂方案 <iconify-icon icon="ph:arrow-right-thin"></iconify-icon>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA Section -->
+    <section id="book" class="py-32 relative z-10 overflow-hidden">
+        <!-- Abstract gradient background -->
+        <div class="absolute inset-0 z-0">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.08)_0%,transparent_70%)] rounded-full blur-3xl"></div>
+        </div>
+        
+        <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
+            <iconify-icon icon="ph:seal-check-thin" class="text-5xl text-[#D4AF37] mb-8"></iconify-icon>
+            <h2 class="text-4xl md:text-6xl font-serif text-white mb-6 tracking-widest">
+                開啟您的<span class="text-gradient-gold">專屬之夜</span>
+            </h2>
+            <p class="text-gray-400 text-sm md:text-base tracking-widest mb-12 font-light">
+                本會館採嚴格預約制，請留下您的聯繫方式，專屬顧問將盡速與您聯繫，為您安排尊榮行程。
+            </p>
+            <form class="max-w-md mx-auto space-y-6">
+                <input type="text" placeholder="貴賓稱呼" class="w-full bg-transparent border-b border-gray-700 py-3 text-white focus:outline-none focus:border-[#D4AF37] transition-colors placeholder-gray-600 tracking-widest text-sm text-center">
+                <input type="tel" placeholder="聯絡電話" class="w-full bg-transparent border-b border-gray-700 py-3 text-white focus:outline-none focus:border-[#D4AF37] transition-colors placeholder-gray-600 tracking-widest text-sm text-center">
+                <button type="button" class="w-full bg-gradient-to-r from-[#BF953F] to-[#AA771C] text-black py-4 mt-8 text-sm tracking-widest hover:brightness-110 transition-all duration-300 font-medium hover-target">
+                    確認送出
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-[#08080B] py-12 border-t border-white/5 relative z-10">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-6">
+            <div>
+                <div class="text-2xl font-serif text-white tracking-[0.2em] uppercase mb-2">
+                    <span class="text-gradient-gold">M</span> Club
+                </div>
+                <p class="text-gray-600 text-xs tracking-widest">Premium Membership Lounge</p>
+            </div>
+            <div class="flex gap-6 text-gray-500">
+                <a href="#" class="hover:text-[#D4AF37] transition-colors hover-target"><iconify-icon icon="mdi:instagram" class="text-xl"></iconify-icon></a>
+                <a href="#" class="hover:text-[#D4AF37] transition-colors hover-target"><iconify-icon icon="mdi:facebook" class="text-xl"></iconify-icon></a>
+            </div>
+            <div class="text-gray-600 text-xs tracking-widest">
+                &copy; 2024 M Club. All Rights Reserved.<br>
+                <span class="opacity-50 text-[10px]">尊榮至上 ｜ 極致品味 ｜ 絕對私密</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Keyframe Animations -->
+    <style>
+        @keyframes scrolldown {
+            0% { transform: translateY(-100%); }
+            50% { transform: translateY(100%); }
+            100% { transform: translateY(100%); }
+        }
+    </style>
+
+    <!-- Scripts -->
+    <script>
+        // Custom Cursor Logic
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+        const hoverTargets = document.querySelectorAll('.hover-target, a, button, input');
+
+        if(window.innerWidth > 768) {
+            window.addEventListener('mousemove', (e) => {
+                const posX = e.clientX;
+                const posY = e.clientY;
+
+                cursorDot.style.left = `${posX}px`;
+                cursorDot.style.top = `${posY}px`;
+
+                // Slight delay for outline
+                cursorOutline.animate({
+                    left: `${posX}px`,
+                    top: `${posY}px`
+                }, { duration: 500, fill: "forwards" });
+            });
+
+            hoverTargets.forEach(target => {
+                target.addEventListener('mouseenter', () => {
+                    cursorOutline.style.width = '60px';
+                    cursorOutline.style.height = '60px';
+                    cursorOutline.style.backgroundColor = 'rgba(212, 175, 55, 0.1)';
+                });
+                target.addEventListener('mouseleave', () => {
+                    cursorOutline.style.width = '40px';
+                    cursorOutline.style.height = '40px';
+                    cursorOutline.style.backgroundColor = 'transparent';
+                });
+            });
+        }
+
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Navbar effect on scroll
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                nav.classList.add('bg-[#0D0D12]/90', 'backdrop-blur-md', 'border-b', 'border-[#D4AF37]/20', 'py-3');
+                nav.classList.remove('py-5');
+            } else {
+                nav.classList.remove('bg-[#0D0D12]/90', 'backdrop-blur-md', 'border-b', 'border-[#D4AF37]/20', 'py-3');
+                nav.classList.add('py-5');
+            }
+        });
+
+        // Hero Parallax & Reveal
+        const heroTl = gsap.timeline();
+        heroTl.to(".reveal-text", { y: 0, opacity: 1, duration: 1, stagger: 0.2, ease: "power3.out", delay: 0.5 })
+              .to(".reveal-title", { y: 0, opacity: 1, duration: 1.5, ease: "power3.out" }, "-=1")
+              .to(".reveal-buttons", { y: 0, opacity: 1, duration: 1, ease: "power3.out" }, "-=0.5");
+
+        gsap.to("#hero-bg", {
+            yPercent: 20,
+            ease: "none",
+            scrollTrigger: {
+                trigger: "header",
+                start: "top top", 
+                end: "bottom top",
+                scrub: true
+            }
+        });
+
+        // Values Cards stagger animation
+        gsap.to(".value-card", {
+            scrollTrigger: {
+                trigger: "#philosophy",
+                start: "top 70%",
+            },
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            stagger: 0.2,
+            ease: "power2.out"
+        });
+
+        // Models Grid Reveal
+        gsap.from(".model-card", {
+            scrollTrigger: {
+                trigger: "#lineup",
+                start: "top 70%",
+            },
+            y: 50,
+            opacity: 0,
+            duration: 1,
+            stagger: 0.15,
+            ease: "power2.out"
+        });
+
+        // VIP Section text Reveal
+        gsap.from(".vip-text > *", {
+            scrollTrigger: {
+                trigger: "#vip",
+                start: "top 70%",
+            },
+            x: 30,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.1,
+            ease: "power2.out"
+        });
+
+    </script>
+</body>
+</html>
