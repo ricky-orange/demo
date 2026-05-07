@@ -2,6 +2,9 @@
 setlocal
 cd /d "%~dp0"
 
+set "NO_PAUSE="
+if /I "%~1"=="/silent" set "NO_PAUSE=1"
+
 if not exist logs mkdir logs
 set LOG=logs\update_snapshots.log
 
@@ -22,4 +25,4 @@ echo [%date% %time%] Update completed. >> "%LOG%"
 echo.
 echo Done. data\snapshots.json has been updated.
 echo Next step: run 2_publish_to_github.bat
-pause
+if not defined NO_PAUSE pause
