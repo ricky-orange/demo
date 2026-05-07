@@ -378,19 +378,6 @@
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script>
       window.ETF_STATIC_SITE = location.hostname !== "127.0.0.1" && location.hostname !== "localhost";
-      (() => {
-        const descriptor = Object.getOwnPropertyDescriptor(Element.prototype, "innerHTML");
-        const hiddenNotice = " · 公開靜態版只讀 data/snapshots.json";
-        Object.defineProperty(Element.prototype, "innerHTML", {
-          get: descriptor.get,
-          set(value) {
-            const nextValue = this.id === "dataSourceStatus" && typeof value === "string"
-              ? value.replace(hiddenNotice, "")
-              : value;
-            descriptor.set.call(this, nextValue);
-          }
-        });
-      })();
     </script>
     <script src="./app.js"></script>
   </body>
