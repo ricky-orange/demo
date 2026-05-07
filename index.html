@@ -378,6 +378,40 @@
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script>
       window.ETF_STATIC_SITE = location.hostname !== "127.0.0.1" && location.hostname !== "localhost";
+      (() => {
+        const developerOnlyMessages = [
+          "公開靜態版只讀 data/snapshots.json",
+          "GitHub 靜態快照保留每個 ETF 的前 15 個持股。如有需要，請執行本機更新程式發布更完整的每日快照。",
+          "GitHub static snapshot keeps top 15 holdings per ETF. Run local updater to publish a fuller daily snapshot if needed."
+        ];
+
+        const cleanDeveloperHints = () => {
+          const status = document.getElementById("dataSourceStatus");
+          if (status) {
+            const small = status.querySelector("small");
+            if (small) {
+              developerOnlyMessages.forEach((message) => {
+                small.textContent = small.textContent
+                  .replace(` · ${message}`, "")
+                  .replace(message, "");
+              });
+            }
+          }
+
+          const alert = document.getElementById("dataSourceAlert");
+          if (alert && developerOnlyMessages.some((message) => alert.textContent.includes(message))) {
+            alert.hidden = true;
+            alert.textContent = "";
+          }
+        };
+
+        document.addEventListener("DOMContentLoaded", cleanDeveloperHints);
+        new MutationObserver(cleanDeveloperHints).observe(document.documentElement, {
+          childList: true,
+          characterData: true,
+          subtree: true
+        });
+      })();
     </script>
     <script src="./app.js"></script>
   </body>
