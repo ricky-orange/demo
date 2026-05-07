@@ -1,384 +1,127 @@
 <!doctype html>
 <html lang="zh-Hant">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>主動式 ETF 跟單雷達</title>
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <div class="app-shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <div class="brand-mark" aria-hidden="true">
-            <span></span><span></span><span></span>
-          </div>
-          <div>
-            <strong>主動式 ETF</strong>
-            <small>跟單雷達</small>
-          </div>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>主動式 ETF 跟單雷達</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div><strong>主動式 ETF</strong><small>跟單雷達</small></div>
+      </div>
+      <nav class="nav-tabs" aria-label="主要功能">
+        <button class="nav-tab active" data-view="dashboard" type="button"><span class="icon" data-icon="radar"></span><span>總覽雷達</span></button>
+        <button class="nav-tab" data-view="snapshot" type="button"><span class="icon" data-icon="calendar"></span><span>每日快照</span></button>
+        <button class="nav-tab" data-view="changes" type="button"><span class="icon" data-icon="shuffle"></span><span>持股異動</span></button>
+        <button class="nav-tab" data-view="overlap" type="button"><span class="icon" data-icon="layers"></span><span>持股重疊</span></button>
+        <button class="nav-tab" data-view="stock" type="button"><span class="icon" data-icon="search"></span><span>個股追蹤</span></button>
+        <button class="nav-tab" data-view="sync" type="button"><span class="icon" data-icon="trend"></span><span>同步加碼</span></button>
+        <button class="nav-tab" data-view="buyRadar" type="button"><span class="icon" data-icon="plus"></span><span>新增雷達</span></button>
+        <button class="nav-tab" data-view="sellRadar" type="button"><span class="icon" data-icon="minus"></span><span>賣出雷達</span></button>
+      </nav>
+      <div class="watch-card"><div class="watch-title">監控清單</div><div class="watch-count"><span id="watchCount">10</span> 檔</div><div class="watch-note">Top 10 主動式 ETF</div></div>
+    </aside>
+
+    <main class="main-panel">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">Taiwan Active ETF Monitor</div>
+          <h1 id="viewTitle">總覽雷達</h1>
+          <p id="viewSubtitle">追蹤每日換股、同步加碼與個股持有規模</p>
+          <div id="dataSourceStatus" class="data-source">資料來源檢查中</div>
+          <div id="dataSourceAlert" class="source-alert" hidden></div>
         </div>
-
-        <nav class="nav-tabs" aria-label="主要功能">
-          <button class="nav-tab active" data-view="dashboard" type="button">
-            <span class="icon" data-icon="radar"></span>
-            <span>總覽雷達</span>
-          </button>
-          <button class="nav-tab" data-view="snapshot" type="button">
-            <span class="icon" data-icon="calendar"></span>
-            <span>每日快照</span>
-          </button>
-          <button class="nav-tab" data-view="changes" type="button">
-            <span class="icon" data-icon="shuffle"></span>
-            <span>持股異動</span>
-          </button>
-          <button class="nav-tab" data-view="overlap" type="button">
-            <span class="icon" data-icon="layers"></span>
-            <span>持股重疊</span>
-          </button>
-          <button class="nav-tab" data-view="stock" type="button">
-            <span class="icon" data-icon="search"></span>
-            <span>個股追蹤</span>
-          </button>
-          <button class="nav-tab" data-view="sync" type="button">
-            <span class="icon" data-icon="trend"></span>
-            <span>同步加碼</span>
-          </button>
-          <button class="nav-tab" data-view="buyRadar" type="button">
-            <span class="icon" data-icon="plus"></span>
-            <span>新增雷達</span>
-          </button>
-          <button class="nav-tab" data-view="sellRadar" type="button">
-            <span class="icon" data-icon="minus"></span>
-            <span>賣出雷達</span>
-          </button>
-        </nav>
-
-        <div class="watch-card">
-          <div class="watch-title">監控清單</div>
-          <div class="watch-count"><span id="watchCount">10</span> 檔</div>
-          <div class="watch-note">Top 10 主動式 ETF</div>
+        <div class="top-actions">
+          <label class="control compact"><span>資料日</span><select id="globalDate"></select></label>
+          <button id="scanButton" class="primary-button" type="button" hidden aria-hidden="true"><span class="icon" data-icon="refresh"></span><span>重新掃描</span></button>
         </div>
-      </aside>
+      </header>
 
-      <main class="main-panel">
-        <header class="topbar">
-          <div>
-            <div class="eyebrow">Taiwan Active ETF Monitor</div>
-            <h1 id="viewTitle">總覽雷達</h1>
-            <p id="viewSubtitle">追蹤每日換股、同步加碼與個股持有規模</p>
-            <div id="dataSourceStatus" class="data-source">資料來源檢查中</div>
-            <div id="dataSourceAlert" class="source-alert" hidden></div>
-          </div>
-          <div class="top-actions">
-            <label class="control compact">
-              <span>資料日</span>
-              <select id="globalDate"></select>
-            </label>
-            <button id="scanButton" class="primary-button" type="button">
-              <span class="icon" data-icon="refresh"></span>
-              <span>重新掃描</span>
-            </button>
-          </div>
-        </header>
+      <section id="dashboard" class="view active" aria-labelledby="viewTitle">
+        <div class="metric-grid four" id="dashboardMetrics"></div>
+        <div class="split-grid">
+          <article class="panel"><div class="panel-heading"><div><h2>新增雷達</h2><p>今日新增進入持股清單</p></div><button class="ghost-button view-jump" data-view="buyRadar" type="button">展開</button></div><div id="dashboardAdds" class="stack-list compact-list"></div></article>
+          <article class="panel"><div class="panel-heading"><div><h2>減碼雷達</h2><p>今日減持或清空</p></div><button class="ghost-button view-jump" data-view="sellRadar" type="button">展開</button></div><div id="dashboardSells" class="stack-list compact-list"></div></article>
+        </div>
+        <article class="panel"><div class="panel-heading"><div><h2>多家同步加碼</h2><p>短期內被多檔 ETF 同時提高權重</p></div><button class="ghost-button view-jump" data-view="sync" type="button">查看全部</button></div><div id="dashboardSync" class="signal-list"></div></article>
+      </section>
 
-        <section id="dashboard" class="view active" aria-labelledby="viewTitle">
-          <div class="metric-grid four" id="dashboardMetrics"></div>
-          <div class="split-grid">
-            <article class="panel">
-              <div class="panel-heading">
-                <div>
-                  <h2>新增雷達</h2>
-                  <p>今日新增進入持股清單</p>
-                </div>
-                <button class="ghost-button view-jump" data-view="buyRadar" type="button">展開</button>
-              </div>
-              <div id="dashboardAdds" class="stack-list compact-list"></div>
-            </article>
-            <article class="panel">
-              <div class="panel-heading">
-                <div>
-                  <h2>減碼雷達</h2>
-                  <p>今日減持或清空</p>
-                </div>
-                <button class="ghost-button view-jump" data-view="sellRadar" type="button">展開</button>
-              </div>
-              <div id="dashboardSells" class="stack-list compact-list"></div>
-            </article>
-          </div>
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>多家同步加碼</h2>
-                <p>短期內被多檔 ETF 同時提高權重</p>
-              </div>
-              <button class="ghost-button view-jump" data-view="sync" type="button">查看全部</button>
-            </div>
-            <div id="dashboardSync" class="signal-list"></div>
-          </article>
-        </section>
+      <section id="snapshot" class="view" aria-labelledby="viewTitle">
+        <div class="toolbar">
+          <label class="control"><span>日期</span><select id="snapshotDate" onchange="document.getElementById('loadSnapshot')?.click()"></select></label>
+          <label class="control wide"><span>ETF</span><select id="snapshotEtf" onchange="document.getElementById('loadSnapshot')?.click()"></select></label>
+          <button id="loadSnapshot" class="primary-button" type="button" hidden aria-hidden="true">載入</button>
+        </div>
+        <div class="metric-grid four" id="snapshotMetrics"></div>
+        <article class="panel">
+          <div class="panel-heading"><div><h2 id="snapshotTitle">每日成分股快照</h2><p id="snapshotRange">完整持股清單</p></div><div class="status-key"><span class="dot add"></span>新增 <span class="dot up"></span>加碼 <span class="dot down"></span>減碼</div></div>
+          <div class="table-wrap"><table><thead><tr><th>狀態</th><th>代號</th><th>名稱</th><th class="num">持股數</th><th class="num">權重 %</th><th class="num">較前日</th><th>權重比</th></tr></thead><tbody id="snapshotRows"></tbody></table></div>
+        </article>
+      </section>
 
-        <section id="snapshot" class="view" aria-labelledby="viewTitle">
-          <div class="toolbar">
-            <label class="control">
-              <span>日期</span>
-              <select id="snapshotDate"></select>
-            </label>
-            <label class="control wide">
-              <span>ETF</span>
-              <select id="snapshotEtf"></select>
-            </label>
-            <button id="loadSnapshot" class="primary-button" type="button">載入</button>
-          </div>
-          <div class="metric-grid four" id="snapshotMetrics"></div>
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2 id="snapshotTitle">每日成分股快照</h2>
-                <p id="snapshotRange">完整持股清單</p>
-              </div>
-              <div class="status-key">
-                <span class="dot add"></span>新增
-                <span class="dot up"></span>加碼
-                <span class="dot down"></span>減碼
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>狀態</th>
-                    <th>代號</th>
-                    <th>名稱</th>
-                    <th class="num">持股數</th>
-                    <th class="num">權重 %</th>
-                    <th class="num">較前日</th>
-                    <th>權重比</th>
-                  </tr>
-                </thead>
-                <tbody id="snapshotRows"></tbody>
-              </table>
-            </div>
-          </article>
-        </section>
+      <section id="changes" class="view" aria-labelledby="viewTitle">
+        <div class="toolbar">
+          <label class="control"><span>分析日</span><select id="changesDate" onchange="document.getElementById('analyzeChanges')?.click()"></select></label>
+          <label class="control wide"><span>ETF</span><select id="changesEtf" onchange="document.getElementById('analyzeChanges')?.click()"></select></label>
+          <button id="analyzeChanges" class="primary-button" type="button" hidden aria-hidden="true">分析</button>
+        </div>
+        <div class="metric-grid five" id="changesMetrics"></div>
+        <article class="panel">
+          <div class="panel-heading"><div><h2 id="changesTitle">持股異動偵測</h2><p id="changesRange">今日 vs 前一交易日</p></div><div class="segmented" role="tablist" aria-label="異動篩選"><button class="segment active" data-change-filter="all" type="button">全部</button><button class="segment" data-change-filter="added" type="button">新增</button><button class="segment" data-change-filter="cleared" type="button">清空</button><button class="segment" data-change-filter="increased" type="button">加碼</button><button class="segment" data-change-filter="reduced" type="button">減碼</button></div></div>
+          <div class="table-wrap"><table><thead><tr><th>狀態</th><th>代號</th><th>名稱</th><th class="num">今日 %</th><th class="num">前日 %</th><th class="num">變動</th><th>近 5 日趨勢</th></tr></thead><tbody id="changesRows"></tbody></table></div>
+        </article>
+      </section>
 
-        <section id="changes" class="view" aria-labelledby="viewTitle">
-          <div class="toolbar">
-            <label class="control">
-              <span>分析日</span>
-              <select id="changesDate"></select>
-            </label>
-            <label class="control wide">
-              <span>ETF</span>
-              <select id="changesEtf"></select>
-            </label>
-            <button id="analyzeChanges" class="primary-button" type="button">分析</button>
-          </div>
-          <div class="metric-grid five" id="changesMetrics"></div>
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2 id="changesTitle">持股異動偵測</h2>
-                <p id="changesRange">今日 vs 前一交易日</p>
-              </div>
-              <div class="segmented" role="tablist" aria-label="異動篩選">
-                <button class="segment active" data-change-filter="all" type="button">全部</button>
-                <button class="segment" data-change-filter="added" type="button">新增</button>
-                <button class="segment" data-change-filter="cleared" type="button">清空</button>
-                <button class="segment" data-change-filter="increased" type="button">加碼</button>
-                <button class="segment" data-change-filter="reduced" type="button">減碼</button>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>狀態</th>
-                    <th>代號</th>
-                    <th>名稱</th>
-                    <th class="num">今日 %</th>
-                    <th class="num">前日 %</th>
-                    <th class="num">變動</th>
-                    <th>近 5 日趨勢</th>
-                  </tr>
-                </thead>
-                <tbody id="changesRows"></tbody>
-              </table>
-            </div>
-          </article>
-        </section>
+      <section id="overlap" class="view" aria-labelledby="viewTitle">
+        <div class="compare-grid">
+          <label class="control color-cyan"><span>ETF A</span><select id="overlapA"></select></label>
+          <label class="control color-green"><span>ETF B</span><select id="overlapB"></select></label>
+          <label class="control color-orange"><span>ETF C</span><select id="overlapC"></select></label>
+          <label class="control color-violet"><span>ETF D</span><select id="overlapD"></select></label>
+          <button id="compareOverlap" class="primary-button" type="button">比較</button>
+        </div>
+        <div class="metric-grid four" id="overlapMetrics"></div>
+        <article class="panel"><div class="panel-heading"><div><h2>兩兩重疊矩陣</h2><p>數字為共同持股數，顏色深淺代表重疊程度</p></div></div><div id="overlapMatrix" class="matrix"></div></article>
+        <article class="panel"><div class="panel-heading"><div><h2>共同持股明細</h2><p>依共同家數與平均權重排序</p></div><button id="toggleUnique" class="ghost-button" type="button">切換獨有持股</button></div><div class="table-wrap"><table><thead><tr><th>代號</th><th>名稱</th><th>持有</th><th class="num">平均權重</th><th class="num">合計權重</th></tr></thead><tbody id="overlapRows"></tbody></table></div></article>
+      </section>
 
-        <section id="overlap" class="view" aria-labelledby="viewTitle">
-          <div class="compare-grid">
-            <label class="control color-cyan">
-              <span>ETF A</span>
-              <select id="overlapA"></select>
-            </label>
-            <label class="control color-green">
-              <span>ETF B</span>
-              <select id="overlapB"></select>
-            </label>
-            <label class="control color-orange">
-              <span>ETF C</span>
-              <select id="overlapC"></select>
-            </label>
-            <label class="control color-violet">
-              <span>ETF D</span>
-              <select id="overlapD"></select>
-            </label>
-            <button id="compareOverlap" class="primary-button" type="button">比較</button>
-          </div>
-          <div class="metric-grid four" id="overlapMetrics"></div>
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>兩兩重疊矩陣</h2>
-                <p>數字為共同持股數，顏色深淺代表重疊程度</p>
-              </div>
-            </div>
-            <div id="overlapMatrix" class="matrix"></div>
-          </article>
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>共同持股明細</h2>
-                <p>依共同家數與平均權重排序</p>
-              </div>
-              <button id="toggleUnique" class="ghost-button" type="button">切換獨有持股</button>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>代號</th>
-                    <th>名稱</th>
-                    <th>持有</th>
-                    <th class="num">平均權重</th>
-                    <th class="num">合計權重</th>
-                  </tr>
-                </thead>
-                <tbody id="overlapRows"></tbody>
-              </table>
-            </div>
-          </article>
-        </section>
+      <section id="stock" class="view" aria-labelledby="viewTitle">
+        <div class="toolbar"><label class="control search-control"><span>個股</span><input id="stockSearch" list="stockList" value="2383" autocomplete="off" /><datalist id="stockList"></datalist></label><button id="trackStock" class="primary-button" type="button">查詢</button></div>
+        <div class="metric-grid four" id="stockMetrics"></div>
+        <article class="panel chart-panel"><div class="panel-heading"><div><h2 id="stockChartTitle">法人總持股規模</h2><p id="stockChartMeta">近 9 個交易日</p></div><div class="segmented"><button class="segment active" data-stock-chart="total" type="button">總規模</button><button class="segment" data-stock-chart="top3" type="button">Top 3</button></div></div><div id="stockChart" class="line-chart"></div></article>
+        <article class="panel"><div class="panel-heading"><div><h2>追監測</h2><p>持有此個股的 ETF 權重變化</p></div></div><div id="stockHoldings" class="holding-track"></div></article>
+      </section>
 
-        <section id="stock" class="view" aria-labelledby="viewTitle">
-          <div class="toolbar">
-            <label class="control search-control">
-              <span>個股</span>
-              <input id="stockSearch" list="stockList" value="2383" autocomplete="off" />
-              <datalist id="stockList"></datalist>
-            </label>
-            <button id="trackStock" class="primary-button" type="button">查詢</button>
-          </div>
-          <div class="metric-grid four" id="stockMetrics"></div>
-          <article class="panel chart-panel">
-            <div class="panel-heading">
-              <div>
-                <h2 id="stockChartTitle">法人總持股規模</h2>
-                <p id="stockChartMeta">近 9 個交易日</p>
-              </div>
-              <div class="segmented">
-                <button class="segment active" data-stock-chart="total" type="button">總規模</button>
-                <button class="segment" data-stock-chart="top3" type="button">Top 3</button>
-              </div>
-            </div>
-            <div id="stockChart" class="line-chart"></div>
-          </article>
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>追監測</h2>
-                <p>持有此個股的 ETF 權重變化</p>
-              </div>
-            </div>
-            <div id="stockHoldings" class="holding-track"></div>
-          </article>
-        </section>
+      <section id="sync" class="view" aria-labelledby="viewTitle">
+        <div class="toolbar"><label class="control"><span>觀察</span><select id="syncDays"><option value="3">3 天</option><option value="5" selected>5 天</option><option value="7">7 天</option><option value="9">9 天</option></select></label><label class="control"><span>門檻</span><select id="syncMin"><option value="2">>= 2 家</option><option value="3" selected>>= 3 家</option><option value="5">>= 5 家</option><option value="8">>= 8 家</option></select></label><button id="querySync" class="primary-button" type="button">查詢</button></div>
+        <div class="legend"><span><i class="legend-dot gold"></i>8 家以上</span><span><i class="legend-dot orange"></i>5-7 家</span><span><i class="legend-dot teal"></i>3-4 家</span><span><i class="legend-dot violet"></i>2 家</span></div>
+        <article class="result-banner" id="syncBanner"></article><div id="syncCards" class="card-grid"></div>
+      </section>
 
-        <section id="sync" class="view" aria-labelledby="viewTitle">
-          <div class="toolbar">
-            <label class="control">
-              <span>觀察</span>
-              <select id="syncDays">
-                <option value="3">3 天</option>
-                <option value="5" selected>5 天</option>
-                <option value="7">7 天</option>
-                <option value="9">9 天</option>
-              </select>
-            </label>
-            <label class="control">
-              <span>門檻</span>
-              <select id="syncMin">
-                <option value="2">>= 2 家</option>
-                <option value="3" selected>>= 3 家</option>
-                <option value="5">>= 5 家</option>
-                <option value="8">>= 8 家</option>
-              </select>
-            </label>
-            <button id="querySync" class="primary-button" type="button">查詢</button>
-          </div>
-          <div class="legend">
-            <span><i class="legend-dot gold"></i>8 家以上</span>
-            <span><i class="legend-dot orange"></i>5-7 家</span>
-            <span><i class="legend-dot teal"></i>3-4 家</span>
-            <span><i class="legend-dot violet"></i>2 家</span>
-          </div>
-          <article class="result-banner" id="syncBanner"></article>
-          <div id="syncCards" class="card-grid"></div>
-        </section>
+      <section id="buyRadar" class="view" aria-labelledby="viewTitle"><div class="metric-grid three" id="buyMetrics"></div><article class="panel"><div class="panel-heading"><div><h2>各 ETF 新增明細</h2><p>昨天沒有、今天出現在持股清單</p></div></div><div id="buyRadarRows" class="radar-list"></div></article><article class="panel"><div class="panel-heading"><div><h2>同步新增</h2><p>同一天被多家 ETF 納入</p></div></div><div id="buyGroupedRows" class="signal-list"></div></article></section>
+      <section id="sellRadar" class="view" aria-labelledby="viewTitle"><div class="metric-grid four" id="sellMetrics"></div><article class="panel"><div class="panel-heading"><div><h2>賣出與清空明細</h2><p>昨天到今天的減持、退出與清空</p></div></div><div id="sellRadarRows" class="radar-list"></div></article><article class="panel"><div class="panel-heading"><div><h2>多家同步減碼</h2><p>同一天被兩家以上 ETF 同步降低權重</p></div></div><div id="sellGroupedRows" class="signal-list"></div></article></section>
+    </main>
+  </div>
 
-        <section id="buyRadar" class="view" aria-labelledby="viewTitle">
-          <div class="metric-grid three" id="buyMetrics"></div>
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>各 ETF 新增明細</h2>
-                <p>昨天沒有、今天出現在持股清單</p>
-              </div>
-            </div>
-            <div id="buyRadarRows" class="radar-list"></div>
-          </article>
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>同步新增</h2>
-                <p>同一天被多家 ETF 納入</p>
-              </div>
-            </div>
-            <div id="buyGroupedRows" class="signal-list"></div>
-          </article>
-        </section>
-
-        <section id="sellRadar" class="view" aria-labelledby="viewTitle">
-          <div class="metric-grid four" id="sellMetrics"></div>
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>賣出與清空明細</h2>
-                <p>昨天到今天的減持、退出與清空</p>
-              </div>
-            </div>
-            <div id="sellRadarRows" class="radar-list"></div>
-          </article>
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2>多家同步減碼</h2>
-                <p>同一天被兩家以上 ETF 同步降低權重</p>
-              </div>
-            </div>
-            <div id="sellGroupedRows" class="signal-list"></div>
-          </article>
-        </section>
-      </main>
-    </div>
-
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    <script>
-      window.ETF_STATIC_SITE = location.hostname !== "127.0.0.1" && location.hostname !== "localhost";
-    </script>
-    <script src="./app.js"></script>
-  </body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script>window.ETF_STATIC_SITE = location.hostname !== "127.0.0.1" && location.hostname !== "localhost";</script>
+  <script src="./app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const cleanText = () => {
+        document.querySelectorAll(".pill.sync").forEach((el) => {
+          if (el.textContent.trim() === "同步") el.textContent = "加碼";
+        });
+        const source = document.getElementById("dataSourceStatus");
+        if (source) source.innerHTML = source.innerHTML.replace(/\s*·\s*公開靜態版只讀 data\/snapshots\.json/g, "");
+      };
+      cleanText();
+      new MutationObserver(cleanText).observe(document.querySelector("main"), { childList: true, subtree: true, characterData: true });
+    });
+  </script>
+</body>
 </html>
