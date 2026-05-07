@@ -42,7 +42,7 @@ if errorlevel 1 "%GIT%" config user.email "ricky-orange@users.noreply.github.com
 "%GIT%" add index.html styles.css app.js data/snapshots.json README.md DEPLOYMENT.md
 "%GIT%" add 0_github_login.bat 1_update_snapshots.bat 2_publish_to_github.bat
 "%GIT%" add build_static_site.bat open_dashboard.bat start_dashboard.bat task_scheduler_update_snapshots_silent.bat
-"%GIT%" add scripts requirements.txt Dockerfile Procfile
+"%GIT%" add scripts\*.py requirements.txt Dockerfile Procfile
 "%GIT%" add data/snapshots.example.json data/raw_holdings.example.csv
 "%GIT%" diff --cached --quiet
 if not errorlevel 1 (
