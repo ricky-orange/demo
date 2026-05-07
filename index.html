@@ -112,12 +112,20 @@
   <script src="./app.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      let cleaning = false;
       const cleanText = () => {
+        if (cleaning) return;
+        cleaning = true;
         document.querySelectorAll(".pill.sync").forEach((el) => {
           if (el.textContent.trim() === "同步") el.textContent = "加碼";
         });
         const source = document.getElementById("dataSourceStatus");
-        if (source) source.innerHTML = source.innerHTML.replace(/\s*·\s*公開靜態版只讀 data\/snapshots\.json/g, "");
+        if (source) {
+          const current = source.innerHTML;
+          const next = current.replace(/\s*·\s*公開靜態版只讀 data\/snapshots\.json/g, "");
+          if (next !== current) source.innerHTML = next;
+        }
+        cleaning = false;
       };
       cleanText();
       new MutationObserver(cleanText).observe(document.querySelector("main"), { childList: true, subtree: true, characterData: true });
