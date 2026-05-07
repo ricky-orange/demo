@@ -67,6 +67,18 @@ def main() -> None:
         if args.limit > 0:
             selected = selected[: args.limit]
 
+    expected_count = len(requested_codes) if args.codes else min(args.limit, len(requested_codes)) if args.limit > 0 else len(requested_codes)
+    if expected_count and len(selected) < expected_count:
+        warnings.append(
+            f"Only fetched {len(selected)} of {expected_count} expected ETF(s); keeping the existing snapshot file."
+        )
+        print(f"Fetch incomplete: {len(selected)} of {expected_count} ETF(s). Existing file was not overwritten.")
+        if warnings:
+            print("Warnings:")
+            for warning in warnings:
+                print(f"- {warning}")
+        sys.exit(1)
+
     selected_codes = {item["code"] for item in selected}
     snapshots = merge_snapshots(existing_snapshots, selected, keep_unselected=args.keep_unselected, selected_codes=selected_codes)
     etfs = [

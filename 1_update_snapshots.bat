@@ -17,7 +17,7 @@ if errorlevel 1 (
   echo.
   echo Update failed. See %LOG% for details.
   echo [%date% %time%] Update failed. >> "%LOG%"
-  pause
+  if not defined NO_PAUSE pause
   exit /b 1
 )
 
