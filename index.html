@@ -414,5 +414,22 @@
       })();
     </script>
     <script src="./app.js"></script>
+    <script>
+      (() => {
+        const removePublicStaticNotice = () => {
+          const status = document.getElementById("dataSourceStatus");
+          if (!status) return;
+          status.querySelectorAll("small").forEach((node) => {
+            node.textContent = node.textContent
+              .replace(" · 公開靜態版只讀 data/snapshots.json", "")
+              .replace("公開靜態版只讀 data/snapshots.json", "")
+              .trim();
+          });
+        };
+
+        removePublicStaticNotice();
+        setInterval(removePublicStaticNotice, 500);
+      })();
+    </script>
   </body>
 </html>
