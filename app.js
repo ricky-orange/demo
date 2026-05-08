@@ -502,9 +502,10 @@
     byId("overlapC").value = "00982A";
     byId("overlapD").value = "00991A";
     byId("watchCount").textContent = String(etfs.length);
-    byId("stockList").innerHTML = stocks
-      .map((stock) => `<option value="${stock.code} ${escapeHtml(stock.name)}"></option>`)
+    byId("stockSearch").innerHTML = stocks
+      .map((stock) => `<option value="${stock.code}">${stock.code} ${escapeHtml(stock.name)}</option>`)
       .join("");
+    if (stockMap.has("2383")) byId("stockSearch").value = "2383";
   }
 
   function bindEvents() {
@@ -539,12 +540,7 @@
       renderOverlap();
     });
 
-    byId("trackStock").addEventListener("click", renderStock);
-    byId("stockSearch").addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        renderStock();
-      }
-    });
+    byId("stockSearch").addEventListener("change", renderStock);
     document.querySelectorAll("[data-stock-chart]").forEach((button) => {
       button.addEventListener("click", () => {
         state.stockChartMode = button.dataset.stockChart;
@@ -739,7 +735,7 @@
     byId("snapshotRange").textContent = `${date} 持股快照`;
     byId("snapshotRows").innerHTML = rows
       .map((row) => {
-        const change = compareMap.get(row.code) || { status: "unchanged", delta: 0 };
+        const change = compareMap.get(row.code) || { status: "unchanged", delta: 0, shareDelta: 0 };
         return `
           <tr>
             <td>${statusChip(change.status)}</td>
@@ -747,7 +743,7 @@
             <td class="name">${escapeHtml(row.name)}</td>
             <td class="num">${formatNumber(row.shares)}</td>
             <td class="num">${formatPct(row.weight)}</td>
-            <td class="num ${deltaClass(change.delta, change.status)}">${formatDelta(change.delta)}</td>
+            <td class="num ${deltaClass(change.shareDelta, change.status)}">${formatShares(change.shareDelta)}</td>
             <td><div class="weight-bar" style="--w:${clamp(row.weight * 10, 4, 100)}%"><span></span></div></td>
           </tr>
         `;
@@ -784,7 +780,7 @@
             <td class="name">${escapeHtml(row.name)}</td>
             <td class="num">${row.today ? formatPct(row.today.weight) : "-"}</td>
             <td class="num">${row.prev ? formatPct(row.prev.weight) : "-"}</td>
-            <td class="num ${deltaClass(row.delta, row.status)}">${formatDelta(row.delta)}</td>
+            <td class="num ${deltaClass(row.shareDelta, row.status)}">${formatShares(row.shareDelta)}</td>
             <td>${sparkline(etfCode, row.code, date)}</td>
           </tr>
         `)
@@ -826,8 +822,7 @@
 
   function renderStock() {
     const date = selectedDate();
-    const stock = resolveStock(byId("stockSearch").value) || stockMap.get("2383");
-    byId("stockSearch").value = `${stock.code} ${stock.name}`;
+    const stock = stockMap.get(byId("stockSearch").value) || stockMap.get("2383") || stocks[0];
     const rows = stockHoldings(date, stock.code);
     const weights = rows.map((row) => row.weight);
     const avgWeight = weights.length ? sum(weights) / weights.length : 0;
@@ -846,7 +841,7 @@
     byId("stockHoldings").innerHTML =
       rows
         .map((row) => {
-          const change = compareEtf(date, row.etf).find((item) => item.code === stock.code) || { delta: 0, status: "unchanged" };
+          const change = compareEtf(date, row.etf).find((item) => item.code === stock.code) || { delta: 0, shareDelta: 0, status: "unchanged" };
           return `
             <div class="track-row">
               <div>${statusChip(change.status)}</div>
@@ -854,7 +849,7 @@
                 <div><span class="code">${row.etf}</span> <span class="subtle">${escapeHtml(findEtf(row.etf).short)}</span></div>
               </div>
               <div>${sparkline(row.etf, stock.code, date)}</div>
-              <div class="num ${deltaClass(change.delta, change.status)}">${formatPct(row.prevWeight || 0)} -> ${formatPct(row.weight)}</div>
+              <div class="num ${deltaClass(change.shareDelta, change.status)}">${formatShares(change.shareDelta)} · ${formatPct(row.prevWeight || 0)} -> ${formatPct(row.weight)}</div>
             </div>
           `;
         })
@@ -1063,11 +1058,12 @@
         const today = todayMap.get(code);
         const before = prevMap.get(code);
         const delta = round(((today && today.weight) || 0) - ((before && before.weight) || 0));
+        const shareDelta = round(((today && today.shares) || 0) - ((before && before.shares) || 0));
         let status = "unchanged";
         if (today && !before) status = "added";
         else if (!today && before) status = "cleared";
-        else if (delta >= 0.05) status = "increased";
-        else if (delta <= -0.05) status = "reduced";
+        else if (shareDelta > 0) status = "increased";
+        else if (shareDelta < 0) status = "reduced";
         const stock = stockMap.get(code);
         return {
           etf: etfCode,
@@ -1076,10 +1072,11 @@
           today,
           prev: before,
           delta,
+          shareDelta,
           status
         };
       })
-      .sort((a, b) => statusRank(a.status) - statusRank(b.status) || Math.abs(b.delta) - Math.abs(a.delta) || a.code.localeCompare(b.code));
+      .sort((a, b) => statusRank(a.status) - statusRank(b.status) || Math.abs(b.shareDelta || 0) - Math.abs(a.shareDelta || 0) || Math.abs(b.delta) - Math.abs(a.delta) || a.code.localeCompare(b.code));
   }
 
   function allEtfChanges(date) {
@@ -1333,7 +1330,7 @@
 
   function radarRow(etfCode, rows, type) {
     const etf = findEtf(etfCode);
-    const sorted = rows.slice().sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+    const sorted = rows.slice().sort((a, b) => Math.abs(b.shareDelta || 0) - Math.abs(a.shareDelta || 0) || Math.abs(b.delta) - Math.abs(a.delta));
     return `
       <div class="radar-row ${type === "sell" ? "sell" : ""}">
         <div>
@@ -1346,7 +1343,7 @@
               <span class="pill ${type === "sell" ? "sell" : "add"}">
                 <span class="code">${row.code}</span>
                 ${escapeHtml(row.name)}
-                <span class="${deltaClass(row.delta, row.status)}">${type === "sell" ? formatDelta(row.delta) : row.status === "added" ? "新進" : formatDelta(row.delta)}</span>
+                <span class="${deltaClass(row.shareDelta, row.status)}">${row.status === "added" ? "新進" : formatShares(row.shareDelta)}</span>
               </span>
             `)
             .join("")}
@@ -1453,6 +1450,12 @@
   function formatDelta(value) {
     const number = Number(value || 0);
     return `${number >= 0 ? "+" : ""}${number.toFixed(2)}%`;
+  }
+
+  function formatShares(value) {
+    const number = Number(value || 0);
+    if (!number) return "0";
+    return `${number > 0 ? "+" : ""}${formatNumber(number)}`;
   }
 
   function formatWan(value) {
