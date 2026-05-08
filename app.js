@@ -1126,8 +1126,12 @@
     stocks.forEach((stock) => {
       const etfMoves = etfs
         .map((etf) => {
-          const start = getAnalysisSnapshot(startDate, etf.code).find((row) => row.code === stock.code);
-          const end = getAnalysisSnapshot(endDate, etf.code).find((row) => row.code === stock.code);
+          const startSnapshotDate = latestDateForEtf(etf.code, startDate);
+          const endSnapshotDate = latestDateForEtf(etf.code, endDate);
+          if (!startSnapshotDate || !endSnapshotDate || startSnapshotDate === endSnapshotDate) return null;
+          const start = getSnapshot(startSnapshotDate, etf.code).find((row) => row.code === stock.code);
+          const end = getSnapshot(endSnapshotDate, etf.code).find((row) => row.code === stock.code);
+          if (!start || !end) return null;
           const delta = round(((end && end.weight) || 0) - ((start && start.weight) || 0));
           return delta > 0.05 ? { etf: etf.code, delta } : null;
         })
