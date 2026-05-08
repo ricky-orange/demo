@@ -698,11 +698,14 @@
     const adds = changes.filter((row) => row.status === "added");
     const sells = changes.filter((row) => row.status === "reduced" || row.status === "cleared");
     const sync = analyzeSync(5, 3, date);
+    const updatedEtfs = etfs.filter((etf) => latestDateForEtf(etf.code, date) === date);
+    const etfBuys = updatedEtfs.filter((etf) => Number(etf.netAmount || 0) > 0);
+    const etfSells = updatedEtfs.filter((etf) => Number(etf.netAmount || 0) < 0);
 
     byId("dashboardMetrics").innerHTML = [
       metricCard("監控 ETF", etfs.length, "檔", "cyan"),
-      metricCard("今日新增", uniqueCount(adds, "code"), "檔", "red"),
-      metricCard("今日減持", sells.length, "筆", "green"),
+      metricCard("ETF 加碼", etfBuys.length, "檔", "red"),
+      metricCard("ETF 減碼", etfSells.length, "檔", "green"),
       metricCard("同步加碼", sync.length, "檔", "amber")
     ].join("");
 
@@ -1080,7 +1083,9 @@
   }
 
   function allEtfChanges(date) {
-    return etfs.flatMap((etf) => compareEtf(date, etf.code));
+    return etfs
+      .filter((etf) => latestDateForEtf(etf.code, date) === date)
+      .flatMap((etf) => compareEtf(date, etf.code));
   }
 
   function countStatuses(rows) {

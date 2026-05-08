@@ -30,6 +30,7 @@ def main() -> None:
     parser.add_argument("--output", "-o", default="data/snapshots.json", help="Output JSON path.")
     parser.add_argument("--limit", "-n", type=int, default=10, help="Keep top N active ETFs by AUM. Use 0 for all.")
     parser.add_argument("--codes", help="Comma-separated ETF codes to fetch instead of auto top-N.")
+    parser.add_argument("--scope", default="domestic", choices=["domestic", "foreign", "all"], help="ETF scope to fetch when --codes is not used.")
     parser.add_argument("--sleep", type=float, default=0.4, help="Seconds to wait between ETF page requests.")
     parser.add_argument("--keep-unselected", action="store_true", help="Keep old snapshots for ETFs outside the selected list.")
     args = parser.parse_args()
@@ -49,14 +50,18 @@ def main() -> None:
     if args.codes:
         requested_codes = [code.strip().upper() for code in args.codes.split(",") if code.strip()]
     else:
-        requested_codes = [item["code"] for item in active_etfs if item.get("code")]
+        scoped_etfs = active_etfs if args.scope == "all" else [item for item in active_etfs if item.get("scope") == args.scope]
+        requested_codes = [item["code"] for item in scoped_etfs if item.get("code")]
+    active_by_code = {item.get("code"): item for item in active_etfs if item.get("code")}
 
     fetched: list[dict[str, Any]] = []
     for index, code in enumerate(requested_codes):
         if index and args.sleep > 0:
             time.sleep(args.sleep)
         try:
-            fetched.append(fetch_etf_detail(code))
+            detail = fetch_etf_detail(code)
+            detail.update(active_by_code.get(code, {}))
+            fetched.append(detail)
         except Exception as exc:
             warnings.append(f"{code} 抓取失敗：{exc}")
 
@@ -90,6 +95,10 @@ def main() -> None:
             "color": PALETTE[index % len(PALETTE)],
             "sourceUrl": item["sourceUrl"],
             "snapshotDate": item["snapshotDate"],
+            "scope": item.get("scope") or "",
+            "netAmount": item.get("netAmount") or 0,
+            "changeCount": item.get("changeCount") or 0,
+            "topChanges": item.get("topChanges") or [],
         }
         for index, item in enumerate(selected)
     ]
@@ -103,7 +112,7 @@ def main() -> None:
         "sourceUrl": ACTIVE_URL,
         "isRealData": True,
         "fetchWarnings": warnings,
-        "selectedRule": "指定代號" if args.codes else f"依最新 AUM 取前 {args.limit} 檔",
+        "selectedRule": "指定代號" if args.codes else f"台股主動 ETF，依最新 AUM 取前 {args.limit} 檔",
         "etfs": etfs,
         "snapshots": snapshots,
     }
