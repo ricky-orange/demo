@@ -505,7 +505,7 @@
     byId("stockSearch").innerHTML = stocks
       .map((stock) => `<option value="${stock.code}">${stock.code} ${escapeHtml(stock.name)}</option>`)
       .join("");
-    if (stockMap.has("2383")) byId("stockSearch").value = "2383";
+    if (stockMap.has("2330")) byId("stockSearch").value = "2330";
   }
 
   function bindEvents() {
@@ -822,7 +822,7 @@
 
   function renderStock() {
     const date = selectedDate();
-    const stock = stockMap.get(byId("stockSearch").value) || stockMap.get("2383") || stocks[0];
+    const stock = stockMap.get(byId("stockSearch").value) || stockMap.get("2330") || stocks[0];
     const rows = stockHoldings(date, stock.code);
     const weights = rows.map((row) => row.weight);
     const avgWeight = weights.length ? sum(weights) / weights.length : 0;
