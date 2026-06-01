@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>正方速查：16 歲以下社群媒體限制</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">辯論速查網站</p>
+        <h1>正方：台灣應跟進澳洲，限制 16 歲以下使用高風險社群媒體</h1>
+      </div>
+      <div class="meta">
+        <span>主檔：0526咪後更新</span>
+        <span id="count"></span>
+      </div>
+    </header>
+
+    <section class="toolstrip" aria-label="搜尋與篩選">
+      <input id="search" type="search" placeholder="搜尋：16歲、澳洲、數位素養、VPN、青少年模式..." autocomplete="off">
+      <button id="copyAnswer" type="button">複製目前回答</button>
+    </section>
+
+    <nav id="chips" class="chips" aria-label="關鍵字標籤"></nav>
+
+    <section class="layout">
+      <aside id="questionList" class="question-list" aria-label="問題列表"></aside>
+      <article class="answer-panel">
+        <div class="answer-head">
+          <div>
+            <p id="source" class="source"></p>
+            <h2 id="title"></h2>
+          </div>
+          <div id="activeTags" class="active-tags"></div>
+        </div>
+        <div id="supplement" class="supplement"></div>
+        <div id="answer" class="answer"></div>
+      </article>
+    </section>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
