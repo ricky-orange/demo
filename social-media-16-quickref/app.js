@@ -12,7 +12,6 @@ const supplement = document.querySelector("#supplement");
 const answer = document.querySelector("#answer");
 const activeTags = document.querySelector("#activeTags");
 const count = document.querySelector("#count");
-const copyAnswer = document.querySelector("#copyAnswer");
 
 const allTags = [...new Set(QUICK_DATA.flatMap((item) => item.tags))];
 
@@ -97,17 +96,6 @@ function render() {
 search.addEventListener("input", (event) => {
   state.filter = event.target.value;
   render();
-});
-
-copyAnswer.addEventListener("click", async () => {
-  const active = QUICK_DATA.find((item) => item.num === state.selectedId);
-  if (!active) return;
-  const text = `${active.title}\n\n${active.answer}`;
-  await navigator.clipboard.writeText(text);
-  copyAnswer.textContent = "已複製";
-  window.setTimeout(() => {
-    copyAnswer.textContent = "複製目前回答";
-  }, 1200);
 });
 
 render();
