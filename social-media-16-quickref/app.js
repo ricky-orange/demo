@@ -46,7 +46,7 @@ const FILTER_TAGS = [
   "滑坡謬誤",
 ];
 
-const TEAM_TAGS_CSV_URL =
+const TEAM_TAGS_CSV_BASE_URL =
   "https://docs.google.com/spreadsheets/d/1FwGAngqiI6Pit-O4rFVGYFh1ohADb26RfXlZPce9oqo/export?format=csv&gid=0";
 const TEAM_TAGS_WRITE_URL =
   "https://script.google.com/macros/s/AKfycbwIuI_vxurbmhKCfVOEttn8G9fc9-Sa5Ax5_NneAsUMcw1zZ9sbE8_GeuTbokq_8RVi/exec";
@@ -100,7 +100,9 @@ function keywordEnabled(value) {
 
 async function loadTeamKeywords() {
   try {
-    const response = await fetch(TEAM_TAGS_CSV_URL, { cache: "no-store" });
+    const response = await fetch(`${TEAM_TAGS_CSV_BASE_URL}&cacheBust=${Date.now()}`, {
+      cache: "reload",
+    });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const rows = parseCsv(await response.text());
     const keywordState = new Map();
