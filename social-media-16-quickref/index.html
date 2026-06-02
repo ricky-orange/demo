@@ -21,9 +21,15 @@
 
     <section class="toolstrip" aria-label="搜尋與篩選">
       <input id="search" type="search" placeholder="搜尋題目、回答，或點下方固定標籤..." autocomplete="off">
+      <button id="saveSearch" class="search-btn" type="button">搜尋</button>
     </section>
 
     <nav id="chips" class="chips" aria-label="關鍵字標籤"></nav>
+    <section id="customSearchesWrap" class="custom-searches" aria-label="自訂搜尋">
+      <div class="custom-divider"></div>
+      <div class="custom-head">自訂搜尋</div>
+      <div id="customSearches" class="custom-chip-list"></div>
+    </section>
 
     <section class="layout">
       <aside id="questionList" class="question-list" aria-label="問題列表"></aside>
