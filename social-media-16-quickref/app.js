@@ -13,7 +13,34 @@ const answer = document.querySelector("#answer");
 const activeTags = document.querySelector("#activeTags");
 const count = document.querySelector("#count");
 
-const allTags = [...new Set(QUICK_DATA.flatMap((item) => item.tags))];
+const FILTER_TAGS = [
+  "為什麼是16歲",
+  "法律定義的青少年",
+  "澳洲現況",
+  "立法趨勢",
+  "如何處罰",
+  "驗證違規",
+  "因果關係",
+  "預防原則",
+  "雙向惡化循環",
+  "數位素養",
+  "地下化",
+  "防弊做法",
+  "個資問題",
+  "菸酒類比",
+  "自由主義",
+  "手機保母",
+  "家庭責任",
+  "青少年模式",
+  "科技治理",
+  "申訴制度",
+  "年齡誤判",
+  "平台自律",
+  "弱勢兒少",
+  "低法律門檻",
+  "錯置辯題",
+  "滑坡謬誤",
+];
 
 function matches(item) {
   const q = state.filter.trim().toLowerCase();
@@ -37,7 +64,7 @@ function renderChips() {
   });
   chips.appendChild(all);
 
-  allTags.forEach((tag) => {
+  FILTER_TAGS.forEach((tag) => {
     const chip = document.createElement("button");
     chip.className = `chip${state.filter === tag ? " active" : ""}`;
     chip.type = "button";
