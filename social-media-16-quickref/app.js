@@ -103,16 +103,17 @@ async function loadTeamKeywords() {
     const response = await fetch(TEAM_TAGS_CSV_URL, { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const rows = parseCsv(await response.text());
-    teamKeywords = rows
-      .slice(1)
-      .map((row) => ({
-        keyword: normalizeKeyword(row[0] || ""),
-        enabled: keywordEnabled(row[1]),
-      }))
-      .filter((row) => row.keyword && row.enabled)
-      .map((row) => row.keyword)
-      .filter((keyword) => !HIDDEN_TEAM_KEYWORDS.has(keyword))
-      .filter((keyword, index, list) => list.indexOf(keyword) === index);
+    const keywordState = new Map();
+    rows.slice(1).forEach((row) => {
+      const keyword = normalizeKeyword(row[0] || "");
+      if (!keyword || HIDDEN_TEAM_KEYWORDS.has(keyword)) return;
+      keywordState.delete(keyword);
+      keywordState.set(keyword, keywordEnabled(row[1]));
+    });
+    teamKeywords = Array.from(keywordState.entries())
+      .filter(([, enabled]) => enabled)
+      .map(([keyword]) => keyword)
+      .reverse();
     teamStatus = teamKeywords.length ? "" : "Google Sheet 目前沒有啟用的自訂標籤。";
   } catch {
     teamStatus = "團隊自訂標籤讀取失敗，請確認 Google Sheet 權限後重新整理。";
@@ -129,6 +130,7 @@ async function writeTeamKeyword(keyword) {
 
   const body = new URLSearchParams({
     key: TEAM_TAGS_WRITE_KEY,
+    action: "add",
     keyword,
     note: "from quick reference site",
   });
@@ -142,6 +144,35 @@ async function writeTeamKeyword(keyword) {
     window.setTimeout(loadTeamKeywords, 1500);
   } catch {
     teamStatus = "寫入 Google Sheet 失敗，請確認 Apps Script 部署狀態。";
+    render();
+  }
+}
+
+async function deleteTeamKeyword(keyword) {
+  teamKeywords = teamKeywords.filter((item) => item !== keyword);
+  if (state.filter === keyword) {
+    state.filter = "";
+    search.value = "";
+  }
+  teamStatus = "";
+  render();
+
+  const body = new URLSearchParams({
+    key: TEAM_TAGS_WRITE_KEY,
+    action: "delete",
+    keyword,
+    note: "deleted from quick reference site",
+  });
+
+  try {
+    await fetch(TEAM_TAGS_WRITE_URL, {
+      method: "POST",
+      mode: "no-cors",
+      body,
+    });
+    window.setTimeout(loadTeamKeywords, 1500);
+  } catch {
+    teamStatus = "刪除 Google Sheet 標籤失敗，請確認 Apps Script 部署狀態。";
     render();
   }
 }
@@ -189,17 +220,29 @@ function renderCustomSearches() {
   customStatus.textContent = teamStatus || (teamKeywords.length ? "" : "Google Sheet 目前沒有啟用的自訂標籤。");
 
   teamKeywords.forEach((keyword) => {
-    const chip = document.createElement("button");
-    chip.type = "button";
+    const chip = document.createElement("span");
     chip.className = `custom-chip${state.filter === keyword ? " active" : ""}`;
-    chip.textContent = keyword;
-    chip.addEventListener("click", () => {
+
+    const label = document.createElement("button");
+    label.type = "button";
+    label.className = "custom-label";
+    label.textContent = keyword;
+    label.addEventListener("click", () => {
       state.filter = keyword;
       search.value = keyword;
       const first = QUICK_DATA.find(matches);
       if (first) state.selectedId = first.num;
       render();
     });
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "custom-remove";
+    remove.textContent = "×";
+    remove.setAttribute("aria-label", `刪除 ${keyword}`);
+    remove.addEventListener("click", () => deleteTeamKeyword(keyword));
+
+    chip.append(label, remove);
     customSearches.appendChild(chip);
   });
 }
