@@ -98,6 +98,51 @@ function keywordEnabled(value) {
   return !["false", "0", "no", "n", "否", "停用"].includes(normalized);
 }
 
+function cleanDisplayText(value) {
+  const normalized = String(value || "").replace(/\r\n?/g, "\n");
+  const lines = normalized.split("\n");
+  const output = [];
+  let paragraph = "";
+
+  const shouldJoinWrappedLine = (line) => {
+    const trimmed = line.trim();
+    if (!trimmed) return false;
+    if (/[。！？：；:;,.，、）)」』】]$/.test(trimmed)) return false;
+    return trimmed.length >= 18;
+  };
+
+  const flush = () => {
+    if (paragraph) {
+      output.push(paragraph);
+      paragraph = "";
+    }
+  };
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flush();
+      if (output[output.length - 1] !== "") output.push("");
+      return;
+    }
+
+    if (!paragraph) {
+      paragraph = trimmed;
+      return;
+    }
+
+    if (shouldJoinWrappedLine(paragraph)) {
+      paragraph += trimmed;
+    } else {
+      flush();
+      paragraph = trimmed;
+    }
+  });
+
+  flush();
+  return output.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+
 async function loadTeamKeywords() {
   try {
     const response = await fetch(`${TEAM_TAGS_CSV_BASE_URL}&cacheBust=${Date.now()}`, {
@@ -272,8 +317,8 @@ function renderList(items) {
 function renderAnswer(item) {
   title.textContent = item.title;
   source.textContent = `來源：${item.source}`;
-  supplement.textContent = item.supplement ? `補充：${item.supplement}` : "";
-  answer.textContent = item.answer;
+  supplement.textContent = item.supplement ? `補充：${cleanDisplayText(item.supplement)}` : "";
+  answer.textContent = cleanDisplayText(item.answer);
   activeTags.innerHTML = item.tags.map((tag) => `<span class="tag">${tag}</span>`).join("");
 }
 
