@@ -7,6 +7,7 @@ const questionList = document.querySelector("#questionList");
 const chips = document.querySelector("#chips");
 const customSearchesWrap = document.querySelector("#customSearchesWrap");
 const customSearches = document.querySelector("#customSearches");
+const customStatus = document.querySelector("#customStatus");
 const search = document.querySelector("#search");
 const saveSearch = document.querySelector("#saveSearch");
 const title = document.querySelector("#title");
@@ -45,28 +46,73 @@ const FILTER_TAGS = [
   "滑坡謬誤",
 ];
 
-const CUSTOM_SEARCH_KEY = "debateQuickRefCustomSearches";
-let customKeywords = loadCustomKeywords();
-
-function loadCustomKeywords() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(CUSTOM_SEARCH_KEY) || "[]");
-    return Array.isArray(parsed) ? parsed.filter((item) => typeof item === "string") : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveCustomKeywords() {
-  try {
-    localStorage.setItem(CUSTOM_SEARCH_KEY, JSON.stringify(customKeywords));
-  } catch {
-    // Some embedded browser contexts disable storage; keep current-session buttons working.
-  }
-}
+const TEAM_TAGS_CSV_URL =
+  "https://docs.google.com/spreadsheets/d/1FwGAngqiI6Pit-O4rFVGYFh1ohADb26RfXlZPce9oqo/export?format=csv&gid=0";
+let teamKeywords = [];
+let teamStatus = "正在讀取團隊自訂標籤...";
 
 function normalizeKeyword(value) {
   return value.trim().replace(/\s+/g, " ");
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"' && inQuotes && next === '"') {
+      cell += '"';
+      i += 1;
+    } else if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === "," && !inQuotes) {
+      row.push(cell);
+      cell = "";
+    } else if ((char === "\n" || char === "\r") && !inQuotes) {
+      if (char === "\r" && next === "\n") i += 1;
+      row.push(cell);
+      if (row.some((value) => value.trim())) rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += char;
+    }
+  }
+
+  row.push(cell);
+  if (row.some((value) => value.trim())) rows.push(row);
+  return rows;
+}
+
+function keywordEnabled(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  return !["false", "0", "no", "n", "否", "停用"].includes(normalized);
+}
+
+async function loadTeamKeywords() {
+  try {
+    const response = await fetch(TEAM_TAGS_CSV_URL, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const rows = parseCsv(await response.text());
+    teamKeywords = rows
+      .slice(1)
+      .map((row) => ({
+        keyword: normalizeKeyword(row[0] || ""),
+        enabled: keywordEnabled(row[1]),
+      }))
+      .filter((row) => row.keyword && row.enabled)
+      .map((row) => row.keyword)
+      .filter((keyword, index, list) => list.indexOf(keyword) === index);
+    teamStatus = teamKeywords.length ? "" : "Google Sheet 目前沒有啟用的自訂標籤。";
+  } catch {
+    teamStatus = "團隊自訂標籤讀取失敗，請確認 Google Sheet 權限後重新整理。";
+  }
+  render();
 }
 
 function matches(item) {
@@ -109,40 +155,20 @@ function renderChips() {
 
 function renderCustomSearches() {
   customSearches.innerHTML = "";
-  customSearchesWrap.classList.toggle("visible", customKeywords.length > 0);
+  customStatus.textContent = teamStatus;
 
-  customKeywords.forEach((keyword) => {
-    const chip = document.createElement("span");
+  teamKeywords.forEach((keyword) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
     chip.className = `custom-chip${state.filter === keyword ? " active" : ""}`;
-
-    const label = document.createElement("button");
-    label.type = "button";
-    label.className = "custom-label";
-    label.textContent = keyword;
-    label.addEventListener("click", () => {
+    chip.textContent = keyword;
+    chip.addEventListener("click", () => {
       state.filter = keyword;
       search.value = keyword;
       const first = QUICK_DATA.find(matches);
       if (first) state.selectedId = first.num;
       render();
     });
-
-    const remove = document.createElement("button");
-    remove.type = "button";
-    remove.className = "custom-remove";
-    remove.textContent = "x";
-    remove.setAttribute("aria-label", `刪除 ${keyword}`);
-    remove.addEventListener("click", () => {
-      customKeywords = customKeywords.filter((item) => item !== keyword);
-      if (state.filter === keyword) {
-        state.filter = "";
-        search.value = "";
-      }
-      saveCustomKeywords();
-      render();
-    });
-
-    chip.append(label, remove);
     customSearches.appendChild(chip);
   });
 }
@@ -197,10 +223,6 @@ function saveCurrentSearch() {
   const keyword = normalizeKeyword(search.value);
   if (!keyword) return;
   state.filter = keyword;
-  if (!customKeywords.includes(keyword)) {
-    customKeywords.unshift(keyword);
-    saveCustomKeywords();
-  }
   const first = QUICK_DATA.find(matches);
   if (first) state.selectedId = first.num;
   render();
@@ -216,3 +238,4 @@ search.addEventListener("keydown", (event) => {
 });
 
 render();
+loadTeamKeywords();
