@@ -119,16 +119,6 @@ input {
   font-weight: 700;
 }
 
-.custom-head a {
-  color: var(--warn);
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.custom-head a:hover {
-  text-decoration: underline;
-}
-
 .custom-chip-list {
   display: flex;
   flex-wrap: wrap;
