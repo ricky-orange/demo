@@ -155,7 +155,7 @@ function renderChips() {
 
 function renderCustomSearches() {
   customSearches.innerHTML = "";
-  customStatus.textContent = teamStatus;
+  customStatus.textContent = teamStatus || (teamKeywords.length ? "" : "Google Sheet 目前沒有啟用的自訂標籤。");
 
   teamKeywords.forEach((keyword) => {
     const chip = document.createElement("button");
